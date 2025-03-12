@@ -1,0 +1,11 @@
+*{
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+#h1{
+  Padding: 50px;
+  border:50px;
+  border-bottom-color: brown 10px;
+}
