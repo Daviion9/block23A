@@ -10,82 +10,121 @@ const API_URL = `https://fsa-puppy-bowl.herokuapp.com/api/${cohortName}`;
 
 // data.foreach =((players) => {
 //   console.log(players);
-
 const Ulelement = document.querySelector('.Llist');
-console.log(Ulelement);
+const cohortName = '2412-FTB-MT-WEB-PT'; // Replace with your actual cohort name
 
+// Fetch players
 const fetchAllPlayers = async () => {
   try {
-   const response = await fetch(`https://fsa-puppy-bowl.herokuapp.com/api/${cohortName}/players`);
-   const data = await repsonse.json();
-   console.log(data);
-   return data.results
-  }
-
-  const renderAllPlayers = async (Playerlist) => {
-  }
-  
-
-  const init = async () => {
-    const allPlayers = await fetchAllPlayers()
-    await renderAllPlayers
-  }
-
-  init()
-
-  .Playerlist.forEach((Player) => {
-    console.log(Player)
-    const liElement = document.createElement('li')
-    liElement.innertext = Player.name
-    Ulelement.append(liElement)    
-  });
-
-    // TODO
-    
-   catch (err) {
-    console.error("Uh oh, trouble fetching players!", err);
-  }};
-
- 
-/**
- * Fetches a single player from the API.
- * @param {number} playerId
- * @returns {Object} the player object
- */
-const fetchSinglePlayer = async (playerId) => {
-  try {
-    const response = await fetch(`https://fsa-puppy-bowl.herokuapp.com/api/${cohortName}/players/{id}`);
-    const json = await repsonse.json ();
-    console.log(data)
+    const response = await fetch(`https://fsa-puppy-bowl.herokuapp.com/api/${cohortName}/players`);
+    const data = await response.json();
+    return data.data.players;
   } catch (err) {
-    console.error(`Oh no, trouble fetching player #${playerId}!`, err);
+    console.error('Error fetching players:', err);
   }
 };
 
-const Player = async () => {
+// Render players to the DOM
+const renderAllPlayers = async (playerList) => {
+  Ulelement.innerHTML = ''; // Clear list first
+  playerList.forEach((player) => {
+    const liElement = document.createElement('li');
+    liElement.textContent = player.name;
+    Ulelement.appendChild(liElement);
+  });
+};
 
-}
-
+// Initialize
 const init = async () => {
-  const Players = await fetchPlayers()
-  await renderPlayer
-}
+  const allPlayers = await fetchAllPlayers();
+  if (allPlayers) {
+    await renderAllPlayers(allPlayers);
+  }
+};
+
+init();
 
 
-/**
+    // TODO
+    
+    const fetchAllPlayers = async () => {
+      try {
+        const response = await fetch(`https://fsa-puppy-bowl.herokuapp.com/api/${cohortName}/players`);
+        const data = await response.json();
+        return data.data.players;
+      } catch (err) {
+        console.error("Error Fetching", err);
+      }
+    };
+    
+
+ 
+    const cohortName = '2412-FTB-MT-WEB-PT'; // Make sure to define this
+
+    /**
+     * Fetches a single player from the API.
+     * @param {number} playerId
+     * @returns {Object} the player object
+     */
+    const fetchSinglePlayer = async (playerId) => {
+      try {
+        const response = await fetch(`https://fsa-puppy-bowl.herokuapp.com/api/${cohortName}/players/${playerId}`);
+        const data = await response.json();
+        console.log(data.data);
+        return data.data;
+      } catch (err) {
+        console.error(`Oh no, trouble fetching player #${playerId}!`, err);
+      }
+    };
+    
+    // Example render function to display player info
+    const renderSinglePlayer = async (playerId) => {
+      const player = await fetchSinglePlayer(playerId);
+      if (!player) return;
+    
+      const container = document.getElementById("player-details");
+      container.innerHTML = `
+        <h2>${player.name}</h2>
+        <p>Breed: ${player.breed}</p>
+        <p>Status: ${player.status}</p>
+        <img src="${player.imageUrl}" alt="${player.name}" />
+      `;
+    };
+    
+    // Init function for testing
+    const init = async () => {
+      // Example usage: fetch and render player with ID 1
+      await renderSinglePlayer(1);
+    };
+    
+    init();
+    
+
+
+
+ /**
  * Adds a new player to the roster via the API.
- * @param {Object} playerObj the player to add
- * @returns {Object} the player returned by the API
+ * @param {Object} playerObj - The player to add
+ * @returns {Object} - The player returned by the API
  */
 const addNewPlayer = async (playerObj) => {
-  try {await fetch(`https://fsa-puppy-bowl.herokuapp.com/api/${cohortName}/players`,{
-    method: "POST" ,
-    headers: {'Content-Type': 'application/json',
-  
-  }, catch (err) {
+  try {
+    const response = await fetch(`https://fsa-puppy-bowl.herokuapp.com/api/${cohortName}/players`, {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(playerObj)
+    });
+
+    const data = await response.json();
+    console.log("Player added:", data.data);
+    return data.data;
+  } catch (err) {
     console.error("Oops, something went wrong with adding that player!", err);
   }
-});
+};
+
 
 /**
  * Removes a player from the roster via the API.
@@ -123,8 +162,25 @@ const removePlayer = async (playerId) => {
  * @param {Object[]} playerList - an array of player objects
  */
 const renderAllPlayers = (playerList) => {
-  //To Do
+  const container = document.getElementById("player-container");
+  container.innerHTML = ""; 
+
+  playerList.forEach((player) => {
+    const playerCard = document.createElement("div");
+    playerCard.classList.add("player-card");
+
+    playerCard.innerHTML = `
+      <h3>${player.name}</h3>
+      <p><strong>Breed:</strong> ${player.breed}</p>
+      <p><strong>Status:</strong> ${player.status}</p>
+      <img src="${player.imageUrl}" alt="${player.name}" width="200" />
+      <button onclick="renderSinglePlayer(${player.id})">View</button>
+    `;
+
+    container.appendChild(playerCard);
+  });
 };
+
 
 /**
  * Updates `<main>` to display a single player.
@@ -140,7 +196,31 @@ const renderAllPlayers = (playerList) => {
  * @param {Object} player an object representing a single player
  */
 const renderSinglePlayer = (player) => {
-  // TODO
+  const container = document.getElementById("single-player-container");
+  container.innerHTML = ""; // Clear previous content
+
+  const playerDetails = document.createElement("div");
+  playerDetails.classList.add("player-details");
+
+  playerDetails.innerHTML = `
+    <h2>${player.name}</h2>
+    <img src="${player.imageUrl}" alt="${player.name}" width="250" />
+    <p><strong>Breed:</strong> ${player.breed}</p>
+    <p><strong>Status:</strong> ${player.status}</p>
+    <button id="back-button">Back to All Players</button>
+  `;
+
+  container.appendChild(playerDetails);
+
+  // Optional: Hide the all-players view and show only this
+  document.getElementById("player-container").style.display = "none";
+  container.style.display = "block";
+
+  // Add event listener to go back
+  document.getElementById("back-button").addEventListener("click", () => {
+    container.style.display = "none";
+    document.getElementById("player-container").style.display = "block";
+  });
 };
 
 /**
@@ -160,10 +240,16 @@ const renderNewPlayerForm = () => {
  * Initializes the app by fetching all players and rendering them to the DOM.
  */
 const init = async () => {
-  const players = await fetchAllPlayers();
-  renderAllPlayers(players);
+  try {
+    const players = await fetchAllPlayers(); // Fetch player data from API
+    if (players && players.length) {
+      renderAllPlayers(players); // Render them to the page
+    }
 
-  renderNewPlayerForm();
+    renderNewPlayerForm(); // Show form to add new players
+  } catch (err) {
+    console.error("Error", err);
+  }
 };
 
 // This script will be run using Node when testing, so here we're doing a quick
@@ -180,6 +266,9 @@ if (typeof window === "undefined") {
     renderNewPlayerForm,
   };
 } else {
-  init();
-  try {} catch (error) {console.error("An error occurred:", error);} finally {}
-}}finally {}}}
+  try {
+    init();
+  } catch (error) {
+    console.error("An error occurred:", error);
+  }
+}
